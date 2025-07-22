@@ -1,0 +1,36 @@
+##  kubectl taint nodes mycluster-worker nodetaint=nodetaint:NoSchedule
+## kubectl taint nodes mycluster-worker2 nodetaint=nodetaint:NoSchedule
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f-deployment2
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-nginx
+  template:
+    metadata:
+      labels:
+        app: frontend-nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      tolerations:
+      - key: "nodetaint"
+        operator: "Equal"
+        value: "nodetaint"
+        effect: "NoSchedule"
+      restartPolicy: Always

@@ -1,0 +1,96 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+  
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: nginx-config-volume
+            mountPath: /etc/nginx/conf.d/default.conf
+            subPath: default.conf
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80  
+  type: ClusterIP
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: backend-deployment 
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: http-echo
+        image: hashicorp/http-echo
+        args:
+          - "-text=Hello from backend"
+        ports:
+        - containerPort: 5678
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: backend  
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5678
+  type: ClusterIP
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-config
+data:
+  default.conf: |
+    server {
+      listen 80;
+       location / {
+            add_header Content-Type text/plain;
+            return 200 "Welcome to the frontend\n";
+        }
+        location /api {
+            proxy_pass http://backend-service/;
+        }
+    }
+
+

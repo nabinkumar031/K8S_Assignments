@@ -1,0 +1,15 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-config
+data:
+  default.conf: |
+    server {
+      listen 80;
+       location / {
+            return 200 "Welcome to the frontend\n";
+        }
+        location /api {
+            proxy_pass http://backend-service/;
+        }
+    }
