@@ -1,0 +1,48 @@
+#install docker
+sudo su 
+apt update 
+apt install docker.io -y 
+
+# install kind
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin/kind
+kind --version
+kind create cluster
+Optional - kind delete cluster
+
+#install kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+kubectl version --client
+
+#create cluster with kind
+# kind-cluster-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+  - role: worker
+  - role: worker
+
+
+kind create cluster --config kind-cluster-config.yaml
+kubectl get nodes
+
+#install metrics server
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+# Patch metrics-server to allow insecure TLS connections
+# This is necessary if you're running kind or minikube, which do not have a valid
+kubectl patch deployment metrics-server -n kube-system \
+  --type=json \
+  -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+  
+kubectl get pods -n kube-system | grep metrics-server
+
+#create hpa
+kubectl autoscale deployment nginx-deployment --cpu-percent=20 --min=1 --max=10
+
+#load generator
+kubectl run -it --rm load-generator --image=busybox /bin/sh 
+while true; do wget -q -O- http://nginx-service.default.svc.cluster.local; done
