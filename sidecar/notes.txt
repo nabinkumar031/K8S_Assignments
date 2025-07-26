@@ -1,0 +1,3 @@
+kubectl port-forward pod/nginx-busybox-pod 8000:80 
+kubectl logs nginx-busybox-pod -c busybox-sidecar-container
+http://localhost:8000/

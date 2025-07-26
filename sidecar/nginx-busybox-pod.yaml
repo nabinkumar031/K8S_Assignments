@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-busybox-pod
+  labels:
+    app: nginx-with-sidecar
+spec:
+  volumes:
+    - name: shared-logs
+      emptyDir: {}
+
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx
+      ports:
+        - containerPort: 80
+
+    - name: busybox-sidecar-container
+      image: busybox:latest
+      command: ["sh", "-c", "tail -f /var/log/nginx/access.log"]
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /var/log/nginx
