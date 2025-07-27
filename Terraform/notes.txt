@@ -1,0 +1,15 @@
+create ec2 - name =terraform
+install terraform on ubantu 
+create user in IAM - attach ec2 policy also AmazonEC2FullAccess 
+create accesskey for the user 
+Get AccessKey and Secrect AccessKey
+Install AWS CLI 
+aws configure 
+mkdir TERRAFORM 
+cd TERRAFORM  
+create file website-infra.tf 
+---
+terraform init 
+terraform validate 
+terraform plan 
+terraform apply 
