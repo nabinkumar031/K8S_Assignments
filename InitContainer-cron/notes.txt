@@ -1,0 +1,15 @@
+kubectl logs nginx-pod -c busybox-container
+## RUn the describe command to see the sequence 
+ kubectl describe pod nginx-pod
+
+
+ -----------
+
+ kubectl apply -f cronjob-example.yaml
+ kubectl get pods
+
+suspend : 
+kubectl patch cronjob hello-cron --type=merge --patch-file suspend-cronjob.json
+verify : 
+kubectl get cronjob hello-cron -o=jsonpath="{.spec.suspend}"
+kubectl get cronjob hello-cron
